@@ -1,0 +1,91 @@
+{
+  "_README": "PREVIEW / FALLBACK DATA. Served when /api/reviews is unreachable or not yet configured, so the reviews rail is never an empty hole. THE TEXT AND NAMES BELOW ARE THE FIRM'S OWN PUBLISHED TESTIMONIALS, taken only from https://dcmdlaw.com/about-our-firm/testimonials/ — they are real client words, but they are NOT Google reviews. Every record is tagged \"source\":\"demo\", which makes the UI render an amber 'Sample data' notice above the rail and a 'Sample — not from Google' badge on each card instead of the Google logo. This exists so you can see exactly what imported Google reviews will look like before the Places API is wired up. The dates are relative placeholders for layout purposes only. Once GOOGLE_PLACES_API_KEY and PLACE_ID_* are set, live Google data replaces all of this automatically and this file is never read. NEVER add invented reviews here, and never strip the source tag to make the fallback look like real Google data.",
+  "demo": true,
+  "rating": 4.9,
+  "total": 5,
+  "fetchedAt": null,
+  "top": [
+    {
+      "author": "Kaitlyn Williams",
+      "rating": 5,
+      "text": "Was discouraged after speaking with other firms until I found this one. Michael is extremely professional, straight forward and proactive! Everyone is professional and responsive. Made sure I was informed and comfortable with all decisions and kept me updated every step.",
+      "relative": "2 weeks ago",
+      "source": "demo",
+      "office": "Waldorf"
+    },
+    {
+      "author": "Eli Natoli",
+      "rating": 5,
+      "text": "I can't recommend Alpert Schreyer Personal Injury Lawyers enough! We selected the firm for a very difficult car accident case. Everyone has been beyond helpful. They kept us informed through-out the entire process and pushed through all the way to the end with outstanding outcome.",
+      "relative": "a month ago",
+      "source": "demo",
+      "office": "Lanham"
+    },
+    {
+      "author": "Wendy Watson",
+      "rating": 5,
+      "text": "My experience with Mr Berman was better than expected. He made me feel very safe. He was extremely thorough with representing my case. Mr Berman never backed down and was very aggressive in defending me. I would highly recommend him to defend anyone that needs help.",
+      "relative": "3 months ago",
+      "source": "demo",
+      "office": "Waldorf"
+    },
+    {
+      "author": "Tina Wagner",
+      "rating": 5,
+      "text": "I'm extremely happy with the outcome of my case. Mr. Schreyer is a brilliant arbitrator and took care of everything from start to end. My final award exceeded my expectations. I highly recommend this group if you have a need for an attorney.",
+      "relative": "5 months ago",
+      "source": "demo",
+      "office": "Rockville"
+    },
+    {
+      "author": "Richard Ednie",
+      "rating": 5,
+      "text": "My attorney, Chris, was great! He guided me through the entire process of my personal injury case and I was very satisfied with the outcome. Donna, the paralegal assigned to my case couldn't have been better. Very responsive. I would definitely recommend this firm.",
+      "relative": "8 months ago",
+      "source": "demo",
+      "office": "Frederick"
+    }
+  ],
+  "recent": [
+    {
+      "author": "Kaitlyn Williams",
+      "rating": 5,
+      "text": "Was discouraged after speaking with other firms until I found this one. Michael is extremely professional, straight forward and proactive! Everyone is professional and responsive. Made sure I was informed and comfortable with all decisions and kept me updated every step.",
+      "relative": "2 weeks ago",
+      "source": "demo",
+      "office": "Waldorf"
+    },
+    {
+      "author": "Eli Natoli",
+      "rating": 5,
+      "text": "I can't recommend Alpert Schreyer Personal Injury Lawyers enough! We selected the firm for a very difficult car accident case. Everyone has been beyond helpful. They kept us informed through-out the entire process and pushed through all the way to the end with outstanding outcome.",
+      "relative": "a month ago",
+      "source": "demo",
+      "office": "Lanham"
+    },
+    {
+      "author": "Wendy Watson",
+      "rating": 5,
+      "text": "My experience with Mr Berman was better than expected. He made me feel very safe. He was extremely thorough with representing my case. Mr Berman never backed down and was very aggressive in defending me. I would highly recommend him to defend anyone that needs help.",
+      "relative": "3 months ago",
+      "source": "demo",
+      "office": "Waldorf"
+    },
+    {
+      "author": "Tina Wagner",
+      "rating": 5,
+      "text": "I'm extremely happy with the outcome of my case. Mr. Schreyer is a brilliant arbitrator and took care of everything from start to end. My final award exceeded my expectations. I highly recommend this group if you have a need for an attorney.",
+      "relative": "5 months ago",
+      "source": "demo",
+      "office": "Rockville"
+    },
+    {
+      "author": "Richard Ednie",
+      "rating": 5,
+      "text": "My attorney, Chris, was great! He guided me through the entire process of my personal injury case and I was very satisfied with the outcome. Donna, the paralegal assigned to my case couldn't have been better. Very responsive. I would definitely recommend this firm.",
+      "relative": "8 months ago",
+      "source": "demo",
+      "office": "Frederick"
+    }
+  ]
+}

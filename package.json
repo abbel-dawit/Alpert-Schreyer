@@ -1,0 +1,23 @@
+{
+  "name": "dcmdlaw",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Alpert Schreyer Personal Injury Lawyers \u2014 standalone site",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:clean-urls": "node scripts/build.mjs --clean-urls",
+    "dev": "node scripts/build.mjs && npx serve site -p 3000",
+    "media:vendor": "node scripts/vendor-images.mjs",
+    "fonts:vendor": "node scripts/vendor-fonts.mjs",
+    "standalone": "node scripts/vendor-images.mjs && node scripts/vendor-fonts.mjs && node scripts/build.mjs",
+    "reviews:cache": "node scripts/fetch-reviews.mjs",
+    "check:links": "npx linkinator site --recurse --silent --skip 'linkedin.com|dcmdlaw.com'",
+    "check:a11y": "npx pa11y http://localhost:3000 --standard WCAG2AA",
+    "check:perf": "npx lighthouse http://localhost:3000 --preset=desktop --view",
+    "import:blog": "node scripts/import-blog.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Blog Editor — Alpert Schreyer</title>
+<style>
+  :root{
+    --ink:#0E1A22; --ink-7:#334; --ink-4:#6b7785; --paper:#F5F6F4; --white:#fff;
+    --rule:#e3e5e1; --rule-2:#cfd2cd; --crimson:#A6192E; --teal:#2E6E6A; --star:#F5A623;
+    --r:10px; --shadow:0 1px 3px rgba(14,26,34,.08),0 8px 24px rgba(14,26,34,.06);
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --sans:'Public Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  a{color:var(--crimson)}
+  code{font-family:var(--mono);font-size:.85em;background:var(--paper);padding:.1em .35em;border-radius:4px;border:1px solid var(--rule)}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 clamp(1rem,4vw,2rem)}
+
+  /* gate */
+  .gate{min-height:100vh;display:grid;place-items:center;padding:2rem}
+  .gate__card{background:var(--white);border:1px solid var(--rule);border-radius:16px;box-shadow:var(--shadow);padding:clamp(1.75rem,4vw,2.75rem);max-width:440px;width:100%}
+  .gate__card h1{font-size:1.375rem;margin-bottom:.5rem;letter-spacing:-.02em}
+  .gate__card p{color:var(--ink-4);font-size:.9375rem;margin-bottom:1.5rem}
+  .gate__note{margin-top:1.25rem;padding:.85rem 1rem;background:#FFF8E6;border:1px solid #E8C766;border-radius:8px;font-size:.8125rem;color:#6B4E00;line-height:1.55}
+
+  header.bar{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+  .bar__in{display:flex;align-items:center;gap:1rem;padding:.75rem clamp(1rem,4vw,2rem);max-width:1200px;margin:0 auto}
+  .bar__logo{font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
+  .bar__logo span{width:9px;height:9px;border-radius:50%;background:var(--crimson)}
+  .bar__sp{flex:1}
+  .bar__count{font-family:var(--mono);font-size:.75rem;color:var(--ink-4);letter-spacing:.05em}
+
+  .btn{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--rule-2);background:var(--white);color:var(--ink);
+    font:inherit;font-weight:600;font-size:.875rem;padding:.55rem .95rem;border-radius:8px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .btn:hover{border-color:var(--ink-4)}
+  .btn--primary{background:var(--crimson);border-color:var(--crimson);color:#fff}
+  .btn--primary:hover{background:#8d1526;border-color:#8d1526}
+  .btn--teal{background:var(--teal);border-color:var(--teal);color:#fff}
+  .btn--teal:hover{filter:brightness(.94)}
+  .btn--ghost{background:none;border-color:transparent}
+  .btn--ghost:hover{background:var(--paper);border-color:var(--rule)}
+  .btn--sm{padding:.35rem .6rem;font-size:.8125rem}
+  .btn--danger{color:var(--crimson);border-color:transparent}
+  .btn--danger:hover{background:#FDECEE;border-color:#F3C9CF}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:0;min-height:calc(100vh - 57px)}
+  @media (max-width:860px){.layout{grid-template-columns:1fr}.side{display:none}.side.is-open{display:block;position:fixed;inset:57px 0 0 0;z-index:9;background:var(--paper)}}
+
+  .side{border-right:1px solid var(--rule);background:var(--white);overflow-y:auto;max-height:calc(100vh - 57px);position:sticky;top:57px}
+  .side__head{padding:1rem;border-bottom:1px solid var(--rule);display:flex;gap:.5rem;align-items:center}
+  .side__search{flex:1;border:1px solid var(--rule-2);border-radius:8px;padding:.45rem .7rem;font:inherit;font-size:.875rem}
+  .plist{list-style:none}
+  .pitem{padding:.8rem 1rem;border-bottom:1px solid var(--rule);cursor:pointer;transition:.12s;display:grid;gap:.2rem}
+  .pitem:hover{background:var(--paper)}
+  .pitem.is-active{background:#FBF4F5;box-shadow:inset 3px 0 0 var(--crimson)}
+  .pitem__t{font-weight:600;font-size:.875rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .pitem__m{font-family:var(--mono);font-size:.7rem;color:var(--ink-4);display:flex;gap:.5rem;align-items:center}
+  .pitem__draft{color:var(--star);font-weight:600}
+  .tag{display:inline-block;font-size:.7rem;padding:.05rem .4rem;border:1px solid var(--rule-2);border-radius:100px;color:var(--ink-4)}
+
+  main.edit{padding:clamp(1.25rem,3vw,2rem);overflow-y:auto;max-height:calc(100vh - 57px)}
+  .empty{display:grid;place-items:center;height:100%;text-align:center;color:var(--ink-4);gap:1rem}
+  .empty svg{width:48px;height:48px;stroke:var(--rule-2);fill:none;stroke-width:1.5}
+
+  .field{margin-bottom:1.1rem}
+  .field label{display:block;font-weight:600;font-size:.8125rem;margin-bottom:.35rem;letter-spacing:.01em}
+  .field label .hint{font-weight:400;color:var(--ink-4);margin-left:.4rem}
+  .in,.ta,.sel{width:100%;border:1px solid var(--rule-2);border-radius:8px;padding:.6rem .75rem;font:inherit;font-size:.9375rem;background:var(--white);color:var(--ink)}
+  .in:focus,.ta:focus,.sel:focus{outline:2px solid var(--crimson);outline-offset:-1px;border-color:var(--crimson)}
+  .ta{resize:vertical;min-height:90px;font-family:var(--mono);font-size:.875rem;line-height:1.6}
+  .ta--body{min-height:340px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  @media (max-width:600px){.row{grid-template-columns:1fr}}
+  .slug{font-family:var(--mono);font-size:.8125rem;color:var(--ink-4)}
+  .toolbar{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem}
+  .toolbar button{font-family:var(--mono);font-size:.75rem;padding:.3rem .5rem;border:1px solid var(--rule);background:var(--white);border-radius:6px;cursor:pointer}
+  .toolbar button:hover{background:var(--paper)}
+  .editrow{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap}
+  .editrow h2{font-size:1.25rem;letter-spacing:-.02em;flex:1;min-width:200px}
+  .split2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+  @media (max-width:900px){.split2{grid-template-columns:1fr}}
+  .preview{border:1px solid var(--rule);border-radius:var(--r);background:var(--white);padding:1.25rem;max-height:70vh;overflow-y:auto}
+  .preview h1{font-size:1.5rem;margin-bottom:.5rem;letter-spacing:-.02em}
+  .preview h2{font-size:1.15rem;margin:1.2rem 0 .5rem}
+  .preview p{margin-bottom:.75rem;color:var(--ink-7)}
+  .preview ul{margin:0 0 .75rem 1.25rem}
+  .preview img{max-width:100%;border-radius:8px;margin:.5rem 0}
+  .preview a{color:var(--crimson)}
+  .pane-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:.5rem}
+
+  .toast{position:fixed;bottom:1.25rem;left:50%;transform:translateX(-50%) translateY(2rem);opacity:0;
+    background:var(--ink);color:#fff;padding:.7rem 1.1rem;border-radius:8px;font-size:.875rem;font-weight:500;
+    transition:.25s;pointer-events:none;z-index:50;box-shadow:var(--shadow)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .modal{position:fixed;inset:0;background:rgba(14,26,34,.5);display:none;place-items:center;z-index:40;padding:1rem}
+  .modal.show{display:grid}
+  .modal__card{background:var(--white);border-radius:14px;max-width:560px;width:100%;padding:1.75rem;box-shadow:var(--shadow);max-height:85vh;overflow-y:auto}
+  .modal__card h3{font-size:1.125rem;margin-bottom:.75rem}
+  .modal__card p{font-size:.9rem;color:var(--ink-4);margin-bottom:1rem}
+  .drop{border:2px dashed var(--rule-2);border-radius:10px;padding:2rem;text-align:center;color:var(--ink-4);cursor:pointer;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--crimson);background:#FBF4F5;color:var(--crimson)}
+  .modal__foot{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.25rem}
+  .kbd{font-family:var(--mono);font-size:.7rem;background:var(--paper);border:1px solid var(--rule-2);border-bottom-width:2px;border-radius:5px;padding:.1rem .35rem}
+</style>
+</head>
+<body>
+<!-- GATE -->
+<div class="gate" id="gate">
+  <div class="gate__card">
+    <h1>Blog editor</h1>
+    <p>Enter the passphrase to continue.</p>
+    <div class="field">
+      <input class="in" type="password" id="gatePass" placeholder="Passphrase" autocomplete="current-password">
+    </div>
+    <button class="btn btn--primary" id="gateGo" style="width:100%;justify-content:center">Unlock</button>
+    <div class="gate__note">
+      <b>About this lock.</b> This is a static page, so this passphrase only hides
+      the editor from casual view — it is not real security and can be bypassed by
+      anyone who reads the page source. Keep this page out of your public deploy,
+      or put it behind your host's access control (Netlify Identity, Cloudflare
+      Access, HTTP Basic Auth). See the technical manual, §12.
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" hidden>
+  <header class="bar">
+    <div class="bar__in">
+      <div class="bar__logo"><span></span> Blog editor</div>
+      <span class="bar__count" id="count">0 posts</span>
+      <div class="bar__sp"></div>
+      <button class="btn btn--sm btn--ghost" id="importBtn" title="Import a WordPress export">Import WordPress</button>
+      <button class="btn btn--sm" id="newBtn">+ New post</button>
+      <button class="btn btn--sm btn--teal" id="exportBtn" title="Download blog.json">Export blog.json</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="side" id="side">
+      <div class="side__head">
+        <input class="side__search" id="search" placeholder="Search posts…" type="search">
+      </div>
+      <ul class="plist" id="plist"></ul>
+    </aside>
+
+    <main class="edit" id="editorPane">
+      <div class="empty" id="empty">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <div>
+          <p style="font-weight:600;color:var(--ink)">No post selected</p>
+          <p>Pick a post on the left, or start a new one.</p>
+        </div>
+        <button class="btn btn--primary" id="newBtn2">+ New post</button>
+      </div>
+
+      <form id="editor" hidden>
+        <div class="editrow">
+          <h2 id="editTitle">Edit post</h2>
+          <label class="btn btn--sm" style="cursor:pointer"><input type="checkbox" id="fDraft" style="margin-right:.4rem">Draft</label>
+          <button type="button" class="btn btn--sm btn--danger" id="delBtn">Delete</button>
+        </div>
+
+        <div class="field">
+          <label for="fTitle">Title</label>
+          <input class="in" id="fTitle" required>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="fSlug">Slug <span class="hint">the URL</span></label>
+            <input class="in slug" id="fSlug" required>
+            <div class="slug" id="slugPreview" style="margin-top:.3rem"></div>
+          </div>
+          <div class="field">
+            <label for="fDate">Date</label>
+            <input class="in" id="fDate" type="date" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <label for="fCats">Categories <span class="hint">comma-separated</span></label>
+            <input class="in" id="fCats" placeholder="DUI, Maryland Law">
+          </div>
+          <div class="field">
+            <label for="fImage">Featured image URL <span class="hint">optional</span></label>
+            <input class="in" id="fImage" placeholder="https://…">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="fExcerpt">Excerpt <span class="hint">1–2 sentences, shown on cards</span></label>
+          <textarea class="ta" id="fExcerpt" style="min-height:70px"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="fBody">Body <span class="hint">HTML — h2, p, ul/li, a, strong, em, img</span></label>
+          <div class="toolbar" id="toolbar">
+            <button type="button" data-wrap="h2">H2</button>
+            <button type="button" data-wrap="p">P</button>
+            <button type="button" data-wrap="strong">Bold</button>
+            <button type="button" data-wrap="em">Italic</button>
+            <button type="button" data-wrap="ul">List</button>
+            <button type="button" data-link>Link</button>
+          </div>
+          <div class="split2">
+            <div>
+              <div class="pane-label">HTML</div>
+              <textarea class="ta ta--body" id="fBody" spellcheck="true"></textarea>
+            </div>
+            <div>
+              <div class="pane-label">Preview</div>
+              <div class="preview article" id="preview"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:.75rem;position:sticky;bottom:0;background:var(--paper);padding:1rem 0;border-top:1px solid var(--rule)">
+          <button type="submit" class="btn btn--primary">Save post</button>
+          <button type="button" class="btn btn--ghost" id="revertBtn">Revert</button>
+          <div style="flex:1"></div>
+          <span class="bar__count" id="dirty"></span>
+        </div>
+      </form>
+    </main>
+  </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal" id="importModal">
+  <div class="modal__card">
+    <h3>Import from WordPress</h3>
+    <p>Drop a WordPress export here. Two formats work:</p>
+    <p style="margin-bottom:1rem">
+      <b>1. REST API JSON</b> — visit <code>yoursite.com/wp-json/wp/v2/posts?per_page=100&_embed</code>,
+      save the result, drop it here.<br>
+      <b>2. WXR / XML</b> — the file from <code>Tools → Export</code> in wp-admin.
+    </p>
+    <div class="drop" id="drop">
+      <input type="file" id="importFile" accept=".json,.xml" hidden>
+      Drop file here, or click to choose
+    </div>
+    <p id="importResult" style="margin-top:1rem;display:none"></p>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" id="importCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  'use strict';
+  var $ = function(s,r){ return (r||document).querySelector(s); };
+  var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+  /* ----------------------------------------------------------------------
+     STORAGE
+     Posts live in localStorage while you edit, then export to blog.json.
+     localStorage is per-browser: this is a drafting surface, and Export is
+     how work leaves it. It is not the site database — data/blog.json is.
+     ---------------------------------------------------------------------- */
+  var KEY = 'dcmdlaw.blog.v1';
+  var GATEKEY = 'dcmdlaw.blog.unlocked';
+  // Not a security control — see the note on the gate. Just avoids re-typing.
+  var PASS = 'alpert2026';
+
+  var state = { posts: [], categories: [], activeSlug: null, dirty: false };
+
+  function load(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw){ var d = JSON.parse(raw); state.posts = d.posts||[]; state.categories = d.categories||[]; return; }
+    } catch(e){}
+    // First run: try to seed from the deployed blog.json alongside this page.
+    fetch('../../data/blog.json').then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ if (d && d.posts){ state.posts = d.posts; state.categories = d.categories||[]; persist(); renderList(); toast('Loaded '+d.posts.length+' posts from blog.json'); } })
+      .catch(function(){});
+  }
+  function persist(){
+    try { localStorage.setItem(KEY, JSON.stringify({ posts: state.posts, categories: state.categories })); } catch(e){ toast('Could not save locally — export often'); }
+  }
+
+  /* ---------- helpers ---------- */
+  function slugify(s){
+    return String(s||'').toLowerCase().trim()
+      .replace(/[^\w\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  }
+  function esc(s){ return String(s||'').replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function fmtDate(d){ try { return new Date(d+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}); } catch(e){ return d; } }
+  function byDate(a,b){ return (a.date<b.date)?1:-1; }
+
+  function toast(msg){
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  /* ---------- list ---------- */
+  function renderList(){
+    var q = ($('#search').value||'').toLowerCase();
+    var ul = $('#plist'); ul.innerHTML = '';
+    var posts = state.posts.slice().sort(byDate).filter(function(p){
+      return !q || (p.title||'').toLowerCase().indexOf(q) > -1 || (p.cats||[]).join(' ').toLowerCase().indexOf(q) > -1;
+    });
+    posts.forEach(function(p){
+      var li = document.createElement('li');
+      li.className = 'pitem' + (p.slug===state.activeSlug ? ' is-active' : '');
+      li.innerHTML =
+        '<div class="pitem__t">'+esc(p.title||'(untitled)')+'</div>'+
+        '<div class="pitem__m">'+
+          (p.draft?'<span class="pitem__draft">Draft</span>':'')+
+          '<span>'+fmtDate(p.date)+'</span>'+
+          (p.cats&&p.cats[0]?'<span class="tag">'+esc(p.cats[0])+'</span>':'')+
+        '</div>';
+      li.onclick = function(){ selectPost(p.slug); if(window.innerWidth<=860) $('#side').classList.remove('is-open'); };
+      ul.appendChild(li);
+    });
+    $('#count').textContent = state.posts.length + ' post' + (state.posts.length===1?'':'s');
+  }
+
+  /* ---------- editor ---------- */
+  var editing = null;
+
+  function selectPost(slug){
+    if (state.dirty && !confirm('Discard unsaved changes?')) return;
+    var p = state.posts.filter(function(x){return x.slug===slug;})[0];
+    if (!p) return;
+    editing = JSON.parse(JSON.stringify(p));
+    state.activeSlug = slug;
+    fillForm(editing);
+    $('#empty').hidden = true; $('#editor').hidden = false;
+    setDirty(false); renderList();
+  }
+
+  function newPost(){
+    if (state.dirty && !confirm('Discard unsaved changes?')) return;
+    editing = { slug:'', title:'', date:today(), cats:[], excerpt:'', html:'', image:null, draft:true };
+    state.activeSlug = null;
+    fillForm(editing);
+    $('#empty').hidden = true; $('#editor').hidden = false;
+    $('#editTitle').textContent = 'New post';
+    setDirty(false); renderList(); $('#fTitle').focus();
+  }
+
+  function fillForm(p){
+    $('#fTitle').value = p.title||'';
+    $('#fSlug').value = p.slug||'';
+    $('#fDate').value = p.date||today();
+    $('#fCats').value = (p.cats||[]).join(', ');
+    $('#fImage').value = p.image||'';
+    $('#fExcerpt').value = p.excerpt||'';
+    $('#fBody').value = p.html||'';
+    $('#fDraft').checked = !!p.draft;
+    $('#editTitle').textContent = p.title ? 'Edit post' : 'New post';
+    updateSlugPreview(); updatePreview();
+  }
+
+  function readForm(){
+    var title = $('#fTitle').value.trim();
+    var slug = $('#fSlug').value.trim() || slugify(title);
+    var cats = $('#fCats').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+    return {
+      slug: slug, title: title, date: $('#fDate').value || today(),
+      cats: cats, excerpt: $('#fExcerpt').value.trim(),
+      html: $('#fBody').value, image: $('#fImage').value.trim() || null,
+      draft: $('#fDraft').checked
+    };
+  }
+
+  function save(e){
+    if (e) e.preventDefault();
+    var p = readForm();
+    if (!p.title){ toast('Give it a title'); return; }
+    if (!p.slug){ toast('Give it a slug'); return; }
+    // slug collision (excluding the post being edited)
+    var clash = state.posts.filter(function(x){ return x.slug===p.slug && x.slug!==state.activeSlug; }).length;
+    if (clash){ toast('That slug is already used'); return; }
+
+    if (state.activeSlug){
+      state.posts = state.posts.map(function(x){ return x.slug===state.activeSlug ? p : x; });
+    } else {
+      state.posts.push(p);
+    }
+    // merge any new categories
+    p.cats.forEach(function(c){ if (state.categories.indexOf(c)<0) state.categories.push(c); });
+    state.activeSlug = p.slug;
+    editing = JSON.parse(JSON.stringify(p));
+    persist(); setDirty(false); renderList();
+    toast(p.draft ? 'Saved as draft' : 'Saved');
+  }
+
+  function del(){
+    if (!state.activeSlug){ // unsaved new post
+      newPostCancel(); return;
+    }
+    if (!confirm('Delete this post? Export afterwards to make it permanent.')) return;
+    state.posts = state.posts.filter(function(x){ return x.slug!==state.activeSlug; });
+    state.activeSlug = null; editing = null;
+    persist(); renderList();
+    $('#editor').hidden = true; $('#empty').hidden = false;
+    toast('Deleted');
+  }
+  function newPostCancel(){
+    editing=null; state.activeSlug=null;
+    $('#editor').hidden=true; $('#empty').hidden=false; setDirty(false); renderList();
+  }
+
+  function setDirty(v){
+    state.dirty = v;
+    $('#dirty').textContent = v ? 'Unsaved changes' : '';
+    $('#dirty').style.color = v ? 'var(--star)' : '';
+  }
+
+  /* ---------- slug + preview ---------- */
+  function updateSlugPreview(){
+    var s = $('#fSlug').value.trim() || slugify($('#fTitle').value);
+    $('#slugPreview').textContent = s ? '/blog/'+s+'/' : '';
+  }
+  function updatePreview(){
+    var html = $('#fBody').value || '<p style="color:var(--ink-4)">Nothing yet…</p>';
+    var img = $('#fImage').value.trim();
+    $('#preview').innerHTML =
+      '<h1>'+esc($('#fTitle').value||'Untitled')+'</h1>' +
+      (img?'<img src="'+esc(img)+'" alt="">':'') +
+      html;
+  }
+
+  /* ---------- toolbar ---------- */
+  function wrapSelection(tag){
+    var ta = $('#fBody');
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    var sel = ta.value.slice(s,e) || 'text';
+    var open, close;
+    if (tag==='ul'){
+      var lines = sel.split('\n').filter(Boolean);
+      var items = lines.length ? lines : ['item'];
+      var block = '<ul>\n' + items.map(function(l){ return '  <li>'+l+'</li>'; }).join('\n') + '\n</ul>';
+      ta.value = ta.value.slice(0,s) + block + ta.value.slice(e);
+    } else {
+      open = '<'+tag+'>'; close = '</'+tag+'>';
+      ta.value = ta.value.slice(0,s) + open + sel + close + ta.value.slice(e);
+    }
+    ta.focus(); setDirty(true); updatePreview();
+  }
+  function insertLink(){
+    var ta = $('#fBody');
+    var s = ta.selectionStart, e = ta.selectionEnd;
+    var sel = ta.value.slice(s,e) || 'link text';
+    var url = prompt('Link URL', 'https://');
+    if (!url) return;
+    var a = '<a href="'+url+'">'+sel+'</a>';
+    ta.value = ta.value.slice(0,s) + a + ta.value.slice(e);
+    ta.focus(); setDirty(true); updatePreview();
+  }
+
+  /* ----------------------------------------------------------------------
+     EXPORT — writes data/blog.json for you to drop into the repo and rebuild.
+     ---------------------------------------------------------------------- */
+  function exportJson(){
+    var clean = state.posts.slice().sort(byDate).map(function(p){
+      return {
+        slug: p.slug, title: p.title, date: p.date,
+        cats: p.cats||[], excerpt: p.excerpt||'', html: p.html||'',
+        image: p.image||null,
+        imageW: p.imageW||null, imageH: p.imageH||null,
+        draft: !!p.draft
+      };
+    });
+    var out = {
+      generatedAt: new Date().toISOString(),
+      generatedBy: 'blog editor',
+      count: clean.length,
+      categories: state.categories.slice().sort(),
+      posts: clean
+    };
+    var blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'blog.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Downloaded blog.json — drop it in data/ and rebuild');
+  }
+
+  /* ----------------------------------------------------------------------
+     IMPORT — WordPress REST JSON or WXR/XML. Merges by slug (updates existing).
+     ---------------------------------------------------------------------- */
+  function stripHtml(s){ var d=document.createElement('div'); d.innerHTML=s||''; return (d.textContent||'').replace(/\s+/g,' ').trim(); }
+  function decode(s){ var d=document.createElement('textarea'); d.innerHTML=s||''; return d.value; }
+
+  function importRestJson(arr){
+    var out = [];
+    arr.forEach(function(p){
+      if (!p.slug) return;
+      var media = p._embedded && p._embedded['wp:featuredmedia'] && p._embedded['wp:featuredmedia'][0];
+      var terms = p._embedded && p._embedded['wp:term'];
+      var cats = [];
+      if (terms) terms.forEach(function(group){ group.forEach(function(t){ if (t.taxonomy==='category') cats.push(decode(t.name)); }); });
+      out.push({
+        slug: p.slug,
+        title: decode((p.title&&p.title.rendered)||''),
+        date: (p.date||'').slice(0,10) || today(),
+        cats: cats,
+        excerpt: stripHtml((p.excerpt&&p.excerpt.rendered)||'').slice(0,300),
+        html: (p.content&&p.content.rendered)||'',
+        image: media ? (media.source_url||null) : null,
+        imageW: media && media.media_details ? media.media_details.width : null,
+        imageH: media && media.media_details ? media.media_details.height : null,
+        draft: p.status && p.status!=='publish'
+      });
+    });
+    return out;
+  }
+
+  function importWxr(xmlText){
+    var doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    var items = $$('item', doc);
+    var out = [];
+    items.forEach(function(it){
+      var type = it.getElementsByTagName('wp:post_type')[0];
+      if (type && type.textContent !== 'post') return;
+      var status = it.getElementsByTagName('wp:status')[0];
+      var title = (it.getElementsByTagName('title')[0]||{}).textContent || '';
+      var nameEl = it.getElementsByTagName('wp:post_name')[0];
+      var slug = nameEl ? nameEl.textContent : slugify(title);
+      var contentEl = it.getElementsByTagName('content:encoded')[0];
+      var excerptEl = it.getElementsByTagName('excerpt:encoded')[0];
+      var dateEl = it.getElementsByTagName('wp:post_date')[0];
+      var cats = $$('category[domain="category"]', it).map(function(c){ return decode(c.textContent); });
+      out.push({
+        slug: slug || slugify(title),
+        title: decode(title),
+        date: dateEl ? dateEl.textContent.slice(0,10) : today(),
+        cats: cats,
+        excerpt: excerptEl ? stripHtml(excerptEl.textContent).slice(0,300) : stripHtml(contentEl?contentEl.textContent:'').slice(0,200),
+        html: contentEl ? contentEl.textContent : '',
+        image: null,
+        draft: status ? status.textContent!=='publish' : false
+      });
+    });
+    return out;
+  }
+
+  function mergeImported(imported){
+    if (!imported.length){ toast('No posts found in that file'); return; }
+    var bySlug = {}; state.posts.forEach(function(p){ bySlug[p.slug]=p; });
+    var added=0, updated=0;
+    imported.forEach(function(p){
+      if (bySlug[p.slug]) updated++; else added++;
+      bySlug[p.slug] = p;
+      (p.cats||[]).forEach(function(c){ if(state.categories.indexOf(c)<0) state.categories.push(c); });
+    });
+    state.posts = Object.keys(bySlug).map(function(k){ return bySlug[k]; });
+    persist(); renderList();
+    var shortcodes = imported.filter(function(p){ return /\[[a-z_][^\]]*\]/i.test(p.html); }).length;
+    var msg = 'Imported '+imported.length+' ('+added+' new, '+updated+' updated)';
+    $('#importResult').style.display='block';
+    $('#importResult').innerHTML = msg + (shortcodes?'<br><b style="color:var(--star)">'+shortcodes+' posts contain WordPress shortcodes — search the body for [ and clean them.</b>':'');
+    toast(msg);
+  }
+
+  function handleImportFile(file){
+    var reader = new FileReader();
+    reader.onload = function(){
+      var text = reader.result;
+      try {
+        if (file.name.match(/\.xml$/i) || text.trim().indexOf('<?xml')===0){
+          mergeImported(importWxr(text));
+        } else {
+          var data = JSON.parse(text);
+          var arr = Array.isArray(data) ? data : (data.posts || []);
+          // our own export? load straight
+          if (!Array.isArray(data) && data.posts){ mergeImported(data.posts); }
+          else { mergeImported(importRestJson(arr)); }
+        }
+      } catch(err){ toast('Could not parse that file'); $('#importResult').style.display='block'; $('#importResult').textContent='Parse error: '+err.message; }
+    };
+    reader.readAsText(file);
+  }
+
+  /* ---------- wire up ---------- */
+  function boot(){
+    load(); renderList();
+
+    $('#newBtn').onclick = newPost;
+    $('#newBtn2').onclick = newPost;
+    $('#exportBtn').onclick = exportJson;
+    $('#delBtn').onclick = del;
+    $('#revertBtn').onclick = function(){ if (editing) fillForm(editing); setDirty(false); };
+    $('#editor').onsubmit = save;
+    $('#search').oninput = renderList;
+
+    $$('#toolbar [data-wrap]').forEach(function(b){ b.onclick=function(){ wrapSelection(b.getAttribute('data-wrap')); }; });
+    $('#toolbar [data-link]').onclick = insertLink;
+
+    // live preview + dirty tracking
+    ['fTitle','fSlug','fDate','fCats','fImage','fExcerpt','fBody','fDraft'].forEach(function(id){
+      var el = $('#'+id);
+      el.addEventListener('input', function(){ setDirty(true); if(id==='fBody'||id==='fTitle'||id==='fImage') updatePreview(); if(id==='fTitle'||id==='fSlug') updateSlugPreview(); });
+    });
+    // auto-slug from title while slug empty
+    $('#fTitle').addEventListener('input', function(){ if (!state.activeSlug && !$('#fSlug').value.trim()) $('#fSlug').value = slugify($('#fTitle').value); updateSlugPreview(); });
+
+    // import modal
+    $('#importBtn').onclick = function(){ $('#importModal').classList.add('show'); $('#importResult').style.display='none'; };
+    $('#importCancel').onclick = function(){ $('#importModal').classList.remove('show'); };
+    $('#drop').onclick = function(){ $('#importFile').click(); };
+    $('#importFile').onchange = function(){ if (this.files[0]) handleImportFile(this.files[0]); };
+    var drop = $('#drop');
+    ['dragover','dragenter'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+    ['dragleave','drop'].forEach(function(ev){ drop.addEventListener(ev,function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+    drop.addEventListener('drop', function(e){ if (e.dataTransfer.files[0]) handleImportFile(e.dataTransfer.files[0]); });
+
+    // keyboard: Cmd/Ctrl+S saves
+    document.addEventListener('keydown', function(e){
+      if ((e.metaKey||e.ctrlKey) && e.key==='s'){ e.preventDefault(); if(!$('#editor').hidden) save(); }
+    });
+    // warn on unload if dirty
+    window.addEventListener('beforeunload', function(e){ if (state.dirty){ e.preventDefault(); e.returnValue=''; } });
+  }
+
+  /* ---------- gate ---------- */
+  function unlock(){
+    $('#gate').style.display='none'; $('#app').hidden=false; boot();
+  }
+  function tryUnlock(){
+    if ($('#gatePass').value === PASS){ try{ sessionStorage.setItem(GATEKEY,'1'); }catch(e){} unlock(); }
+    else { toast('Wrong passphrase'); $('#gatePass').select(); }
+  }
+  $('#gateGo').onclick = tryUnlock;
+  $('#gatePass').addEventListener('keydown', function(e){ if(e.key==='Enter') tryUnlock(); });
+  try { if (sessionStorage.getItem(GATEKEY)==='1') unlock(); } catch(e){}
+})();
+</script>
+</body>
+</html>

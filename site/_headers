@@ -1,0 +1,30 @@
+# Netlify / Cloudflare Pages security headers.
+# Vercel users: the same policy is mirrored in vercel.json.
+#
+# Fonts are self-hosted and the QR is generated inline — no external font or QR
+# hosts remain. The only off-origin allowance left is dcmdlaw.com in img-src,
+# for images that are still hotlinked until you run `npm run media:vendor`.
+# After vendoring, delete '' from img-src below and the site
+# is 100% self-origin. (TECHNICAL-MANUAL §4
+# and §6.3), delete the marked origins. Tightening the CSP is the single
+# highest-value security change available on this site.
+
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https://*.googleusercontent.com https://*.ggpht.com https://www.googletagmanager.com; connect-src 'self' https://www.google-analytics.com; frame-src https://www.google.com https://www.youtube-nocookie.com
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/data/*
+  Cache-Control: public, max-age=3600
+
+/api/*
+  Cache-Control: no-store
+  X-Robots-Tag: noindex

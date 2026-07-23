@@ -1,0 +1,11 @@
+[build]
+  publish = "site"
+  functions = "api"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Security headers live in ./_headers so Netlify and Cloudflare Pages
+# share one source of truth.

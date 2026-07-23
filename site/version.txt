@@ -1,0 +1,8 @@
+build:   3.7.0
+name:    uniform-table-rules + back-to-top
+built:   2026-07-23 21:06 UTC
+pages:   61
+spanish: 18 pages
+
+If the site you are looking at does not match this, you are running an old
+extract. Open /version.txt in the browser to check which build is served.
